@@ -7,19 +7,19 @@ const prisma = new PrismaClient()
 
 const getTema = async (req: Request, res: Response, next: NextFunction) => {//Trae un tema por su Id
   try {
-    const { id } = req.params 
+    const { id } = req.params
     const getTemaId = await prisma.tema.findUnique({
       where: { id: Number(id) },
     })
 
     if (!getTemaId) {
       return res.status(404).json({ error: 'Tema no encontrado' });
-  }
-
-    res.json(getTemaId)
+    } else {
+      res.json(getTemaId)
+    }
   } catch (error) {
     next(error);
-}
+  }
 };
 
 //Extras
@@ -30,26 +30,31 @@ const getTemas = async (req: Request, res: Response, next: NextFunction) => { //
     res.json(temas)
   } catch (error) {
     next(error);
-}
+  }
 };
 
-  
+
 const deleteTema = async (req: Request, res: Response, next: NextFunction) => { //Elimina un tema por su ID
   try {
     const { id } = req.params
-    const deleteTema = await prisma.tema.delete({
+
+    const temaExistente = await prisma.tema.findUnique({
       where: { id: Number(id) },
-    })
+    });
 
-    if (!deleteTema) {
-      return res.status(404).json({ error: 'Tema no encontrado' });
+    if (!temaExistente) {
+      return res.status(400).json({ error: 'El ID del tema proporcionado no existe. Por favor, ingrese un ID de tema válido.' });
+    
+    } else {
+      const deleteTema = await prisma.tema.delete({
+        where: { id: Number(id) },
+      })
+
+      res.json({ message: 'Tema eliminado', tema: deleteTema });
     }
-
-    res.json({ message: 'Artista eliminado', artista: deleteTema });
   } catch (error) {
     next(error);
+  }
 }
-}
-  
 
-export {getTema, getTemas, deleteTema}
+export { getTema, getTemas, deleteTema }
